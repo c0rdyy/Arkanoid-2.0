@@ -139,6 +139,7 @@
     <ClCompile Include="MainLoop.cpp" />
     <ClCompile Include="InitDeInit.cpp" />
     <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="Shapes.cpp" />
     <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +147,7 @@
     <ClInclude Include="MainLoop.h" />
     <ClInclude Include="InitDeInit.h" />
     <ClInclude Include="Menu.h" />
+    <ClInclude Include="Shapes.h" />
     <ClInclude Include="Text.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

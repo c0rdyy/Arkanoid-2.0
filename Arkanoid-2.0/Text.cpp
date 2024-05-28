@@ -30,4 +30,3 @@ void RenderTexture(SDL_Texture* tex, SDL_Renderer* ren, int x, int y, int w, int
     dst.h = h;
     SDL_RenderCopy(ren, tex, NULL, &dst);
 }
-

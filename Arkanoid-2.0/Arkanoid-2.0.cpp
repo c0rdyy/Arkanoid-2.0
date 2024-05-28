@@ -1,5 +1,5 @@
 ﻿#include "InitDeInit.h"
-#include "Game_Realization.h"
+#include "MainLoop.h"
 
 int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 600;
@@ -11,9 +11,8 @@ int main(int argc, char** argv)
 {
     Init();
 
-    Realization();
+    MainLoop();
 
     DeInit(0);
     return 0;
 }
-

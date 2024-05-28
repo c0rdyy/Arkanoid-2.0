@@ -135,12 +135,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Arkanoid-2.0.cpp" />
-    <ClCompile Include="Game_Realization.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="MainLoop.cpp" />
     <ClCompile Include="InitDeInit.cpp" />
+    <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Game_Realization.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="MainLoop.h" />
     <ClInclude Include="InitDeInit.h" />
+    <ClInclude Include="Menu.h" />
+    <ClInclude Include="Text.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -13,15 +13,36 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Исходные файлы\Initialization">
+      <UniqueIdentifier>{36aa47f9-15e4-44d8-820d-f4727a2988be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Menu">
+      <UniqueIdentifier>{9c5268f4-5384-4421-8478-089b8424e151}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Menu\Main-Menu">
+      <UniqueIdentifier>{5bd25443-5af9-4d52-b970-6ff05b23881e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Menu\Game-Menu">
+      <UniqueIdentifier>{dd2ff844-fbe0-47e0-af5a-0fb88786bd5c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="InitDeInit.cpp">
+      <Filter>Исходные файлы\Initialization</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Исходные файлы\Menu\Game-Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Исходные файлы\Menu\Main-Menu</Filter>
+    </ClCompile>
     <ClCompile Include="Arkanoid-2.0.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="InitDeInit.cpp">
-      <Filter>Исходные файлы</Filter>
+    <ClCompile Include="MainLoop.cpp">
+      <Filter>Исходные файлы\Menu</Filter>
     </ClCompile>
-    <ClCompile Include="Game_Realization.cpp">
+    <ClCompile Include="Text.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +50,16 @@
     <ClInclude Include="InitDeInit.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="Game_Realization.h">
+    <ClInclude Include="MainLoop.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Text.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

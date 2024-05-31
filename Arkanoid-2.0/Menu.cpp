@@ -290,12 +290,6 @@ int ShowMainMenu(int* inGame, int *gameMode)
 	TTF_Font* font2 = TTF_OpenFont("fonts/ARKANOID.TTF", 90);
 	TTF_Font* ownerfont = TTF_OpenFont("fonts/videotype.otf", 15);
 
-	if (!font || !font2) 
-	{
-		SDL_Log("Failed to load font: %s", TTF_GetError());
-		return 0;
-	}
-
 	SDL_Color yellow = { 255, 255, 0, 255 };
 	SDL_Color white = { 255, 255, 255, 255 };
 	SDL_Color barn_red = { 163, 13, 3, 255 };
@@ -314,9 +308,6 @@ int ShowMainMenu(int* inGame, int *gameMode)
 		"Quit"
 	};
 	int menuItemCount = sizeof(menuItems) / sizeof(menuItems[0]);
-
-	int currentScore = 0; // Текущий счёт
-	int highScore = 1000; // Рекордный счёт
 
 	while (running)
 	{
@@ -345,7 +336,7 @@ int ShowMainMenu(int* inGame, int *gameMode)
 		int startX = (windowWidth - maxWidth) / 2;
 		int startY = (windowHeight - totalHeight) / 2;
 
-		// Центрирование текста "Arkanoid"
+		// Центрирование текста
 		int arkanoidWidth, arkanoidHeight;
 		TTF_SizeText(font2, "Arkanoid", &arkanoidWidth, &arkanoidHeight);
 		int arkanoidX = (windowWidth - arkanoidWidth) / 2;
@@ -460,14 +451,6 @@ int ShowMainMenu(int* inGame, int *gameMode)
 
 		RenderText("Arkanoid", arkanoidX, arkanoidY, font2, purple);
 		RenderText("created by cordyy", startX - 4, windowHeight - 25, ownerfont, purple);
-		/*RenderText("Current Score: ", 300, 150, font, white);
-		char scoreStr[12];
-		sprintf_s(scoreStr, "%d", currentScore);
-		RenderText(scoreStr, 500, 150, font, white);
-		RenderText("High Score: ", 300, 200, font, white);
-		char highScoreStr[12];
-		sprintf_s(highScoreStr, "%d", highScore);
-		RenderText(highScoreStr, 500, 200, font, white);*/
 
 		int y = startY;
 		for (int i = 0; i < menuItemCount; i++) 
@@ -487,5 +470,11 @@ int ShowMainMenu(int* inGame, int *gameMode)
 	TTF_CloseFont(font);
 	TTF_CloseFont(font2);
 	TTF_CloseFont(ownerfont);
+
+	if (*inGame)
+	{
+		return 1;
+	}
+	
 	return running;
 }

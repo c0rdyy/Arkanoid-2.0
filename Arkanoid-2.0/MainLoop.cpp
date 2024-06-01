@@ -9,10 +9,6 @@ void MainLoop()
         SDL_SetWindowIcon(window, icon);
         SDL_FreeSurface(icon);
     }
-    else
-    {
-        SDL_Log("Unable to load icon: %s", IMG_GetError());
-    }
 
     int running = 1;
     int inGame = 0;
@@ -26,8 +22,15 @@ void MainLoop()
         }
         else
         {
-            running = GameLoop();
-            inGame = 0;
+            int result = GameLoop();
+
+            if (result == -1) 
+            {
+                running = 0;
+            }
+            else {
+                inGame = 0;
+            }
         }
     }
 }

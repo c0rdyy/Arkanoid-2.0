@@ -367,10 +367,6 @@ int ShowMainMenu(int* inGame, int *gameMode)
 					else if (currentSelection == 1)
 					{
 						*gameMode = ShowGameModeMenu(gameMode);
-						if (*gameMode == -1)
-						{
-							running = 0;
-						}
 					}
 					else if (currentSelection == 2)
 					{

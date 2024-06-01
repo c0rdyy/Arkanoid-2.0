@@ -4,39 +4,41 @@
 #define GAME_H
 
 #include "InitDeInit.h"
+#include "Text.h"
+#include "stdlib.h"
+#include "time.h"
+#include "Shapes.h"
 
-#define BRICK_ROWS 5
-#define BRICK_COLS 10
+const int MAX_BRICKS = 50;
 
-typedef struct {
-    float x, y;
-    float dx, dy;
-    int width, height;
-} Ball;
+struct Paddle 
+{
+    int x, y, w, h;
+    int speed;
+};
 
-typedef struct {
-    float x, y;
-    int width, height;
-    float speed;
-} Paddle;
+struct Ball 
+{
+    int x, y, w, h;
+    int speedX, speedY;
+};
 
-typedef struct {
-    float x, y;
-    int width, height;
-    int destroyed;
-} Brick;
+struct Brick 
+{
+    int x, y, w, h;
+    SDL_Color color;
+    bool destroyed;
+};
 
-void InitBall(Ball* ball);
-void InitPaddle(Paddle* paddle);
-void InitBricks(Brick bricks[], int rows, int cols);
+struct PowerUp 
+{
+    int x, y, w, h;
+    int type;
+    bool active;
+};
 
-void UpdateBall(Ball* ball, Paddle* paddle, Brick bricks[], int brickCount);
-void UpdatePaddle(Paddle* paddle);
-
-void RenderBall(SDL_Renderer* renderer, Ball* ball);
-void RenderPaddle(SDL_Renderer* renderer, Paddle* paddle);
-void RenderBricks(SDL_Renderer* renderer, Brick bricks[], int brickCount);
-
-int GameLoop(); // Объявление функции игрового цикла
+int GameLoop();
+int ShowEndGameMenu(int score);
+void RenderEndScreen();
 
 #endif

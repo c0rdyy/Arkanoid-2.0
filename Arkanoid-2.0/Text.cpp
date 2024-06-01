@@ -11,7 +11,7 @@ void RenderText(const char* text, int x, int y, TTF_Font* font, SDL_Color color)
     SDL_DestroyTexture(texture);
 }
 
-SDL_Texture* LoadTexture(const char* file, SDL_Renderer* renderer) 
+SDL_Texture* LoadTexture(const char* file) 
 {
     SDL_Texture* texture = IMG_LoadTexture(renderer, file);
     if (texture == NULL) 

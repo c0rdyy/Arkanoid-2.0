@@ -6,7 +6,7 @@ void RenderBackground(int windowWidth, int windowHeight)
 	SDL_Rect background = { 0, 0, windowWidth, windowHeight };
 	SDL_RenderFillRect(renderer, &background);
 
-	SDL_SetRenderDrawColor(renderer, 50, 0, 50, 255);
+	SDL_SetRenderDrawColor(renderer, 60, 0, 50, 255);
 	for (int i = 0; i < windowHeight; i += 20)
 	{
 		SDL_RenderDrawLine(renderer, 0, i, windowWidth, i);

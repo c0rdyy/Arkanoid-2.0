@@ -169,7 +169,7 @@ void UpdateGame(Game* game)
                     }
 
                     // Генерация бонуса
-                    if (rand() % 10 == 0) 
+                    if (rand() % 5 == 0) 
                     {
                         AddPowerUp(game, game->bricks[i].x, game->bricks[i].y, rand() % 3);
                     }
@@ -296,7 +296,6 @@ int ShowEndGameMenu(int score, int highScore)
     char highScoreText[50];
 
     sprintf_s(scoreText, "YOUR SCORE: %d", score);
-    sprintf_s(highScoreText, "HIGH SCORE: %d", highScore);
 
     while (running) 
     {
@@ -340,13 +339,12 @@ int ShowEndGameMenu(int score, int highScore)
 
         RenderCenteredText("GAME OVER", largeFont, purple, SCREEN_HEIGHT / 4);
         RenderCenteredText(scoreText, font, white, SCREEN_HEIGHT / 2 - 50);
-        RenderCenteredText(highScoreText, font, white, SCREEN_HEIGHT / 2);
 
 
         for (int i = 0; i < menuItemCount; i++) 
         {
             RenderCenteredText(menuItems[i], font, 
-                (i == currentSelection) ? blue : white, SCREEN_HEIGHT / 2 + 50 + i * 50);
+                (i == currentSelection) ? blue : white, SCREEN_HEIGHT / 2 + i * 50);
         }
         
         SDL_RenderPresent(renderer);

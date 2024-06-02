@@ -22,11 +22,11 @@
     <Filter Include="Исходные файлы\Menu\Main-Menu">
       <UniqueIdentifier>{5bd25443-5af9-4d52-b970-6ff05b23881e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Исходные файлы\Menu\Game-Menu">
-      <UniqueIdentifier>{dd2ff844-fbe0-47e0-af5a-0fb88786bd5c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Исходные файлы\Rendering">
       <UniqueIdentifier>{eb406c7b-a19b-4123-ab33-d710214851a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Menu\Game">
+      <UniqueIdentifier>{dd2ff844-fbe0-47e0-af5a-0fb88786bd5c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -34,7 +34,7 @@
       <Filter>Исходные файлы\Initialization</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp">
-      <Filter>Исходные файлы\Menu\Game-Menu</Filter>
+      <Filter>Исходные файлы\Menu\Game</Filter>
     </ClCompile>
     <ClCompile Include="Menu.cpp">
       <Filter>Исходные файлы\Menu\Main-Menu</Filter>
@@ -50,9 +50,6 @@
     </ClCompile>
     <ClCompile Include="Shapes.cpp">
       <Filter>Исходные файлы\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="GameRealization.cpp">
-      <Filter>Исходные файлы\Menu\Game-Menu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

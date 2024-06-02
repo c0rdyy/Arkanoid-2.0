@@ -1,10 +1,5 @@
 #include "Game.h"
 
-Paddle paddle;
-Ball ball;
-Brick bricks[MAX_BRICKS];
-PowerUp powerUp;
-
 int brickRows = 5;
 int brickCols = 10;
 int brickWidth = 60;
@@ -14,21 +9,29 @@ int totalBrickWidth = brickCols * brickWidth;
 int totalSpacing = SCREEN_WIDTH - totalBrickWidth;
 int spacingBetweenBricks = totalSpacing / (brickCols + 1);
 
-int score = 0;
-int currentRound = 1;
-int highScore = 0;
-int lives = 3;
-
-bool ballLaunched = false;
-bool gameOver = false;
-
-void InitGame() 
+// Функция для инициализации игры
+void InitGame(Game* game)
 {
-    paddle = { 300, 550, 100, 20, 10 };
-    ball = { 350, 530, 10, 10, 0, 0 };
-    ballLaunched = false;
-    powerUp = { 0, 0, 20, 20, 0, false };
-    gameOver = false;
+    // Установка начальных значений
+    game->gameOver = false;
+    game->score = 0;
+    game->highScore = 0;
+    game->lives = 3;
+    game->currentRound = 1;
+    game->ballLaunched = false;
+    game->powerUpCount = 0;
+
+    // Инициализация параметров платформы
+    game->paddle = { 300, 550, 100, 20, 10 };
+
+    // Инициализация параметров мяча
+    game->ball = { 350, 530, 10, 10, 0, 0 };
+
+    // Инициализация бонусов
+    for (int i = 0; i < MAX_POWERUPS; i++) 
+    {
+        game->powerUps[i].active = false;
+    }
 
     SDL_Color colors[5] = 
     {
@@ -44,175 +47,213 @@ void InitGame()
         for (int j = 0; j < brickCols; j++) 
         {
             int index = i * brickCols + j;
-            bricks[index] = { j * (brickWidth + 
-                spacingBetweenBricks) + spacingBetweenBricks, 
-                i * (brickHeight + 5) + 50, brickWidth, brickHeight, 
-                colors[i % 5], false };
+            game->bricks[index] = 
+            { 
+                j * (brickWidth + spacingBetweenBricks) + spacingBetweenBricks, 
+                i * (brickHeight + 5) + 50, 
+                brickWidth, 
+                brickHeight, 
+                colors[i % 5], 
+                false 
+            };
         }
     }
 }
 
-void UpdateGame() 
+void AddPowerUp(Game* game, int x, int y, int type) 
 {
-    if (gameOver) 
+    for (int i = 0; i < MAX_POWERUPS; i++) 
+    {
+        if (!game->powerUps[i].active) 
+        {
+            game->powerUps[i].x = x;
+            game->powerUps[i].y = y;
+            game->powerUps[i].w = 20;  // Ширина бонуса
+            game->powerUps[i].h = 20;  // Высота бонуса
+            game->powerUps[i].type = type;
+            game->powerUps[i].active = true;
+            game->powerUpCount++;
+            break;
+        }
+    }
+}
+
+// Функция для обновления состояния игры
+void UpdateGame(Game* game) 
+{
+    if (game->gameOver) 
     {
         return;
     }
 
     const Uint8* keystates = SDL_GetKeyboardState(NULL);
 
+    // Управление платформой
     if (keystates[SDL_SCANCODE_LEFT]) 
     {
-        paddle.x -= paddle.speed;
-        if (paddle.x < 0) paddle.x = 0;
+        game->paddle.x -= game->paddle.speed;
+        if (game->paddle.x < 0) game->paddle.x = 0;
     }
-
     if (keystates[SDL_SCANCODE_RIGHT]) 
     {
-        paddle.x += paddle.speed;
-        if (paddle.x + paddle.w > SCREEN_WIDTH) paddle.x = SCREEN_WIDTH - paddle.w;
+        game->paddle.x += game->paddle.speed;
+        if (game->paddle.x + game->paddle.w > SCREEN_WIDTH) game->paddle.x = SCREEN_WIDTH - game->paddle.w;
     }
 
-    if (!ballLaunched) 
+    // Управление мячом
+    if (!game->ballLaunched) 
     {
-        ball.x = paddle.x + paddle.w / 2 - ball.w / 2;
-        ball.y = paddle.y - ball.h - 5;
+        game->ball.x = game->paddle.x + game->paddle.w / 2 - game->ball.w / 2;
+        game->ball.y = game->paddle.y - game->ball.h - 5;
 
         if (keystates[SDL_SCANCODE_SPACE]) 
         {
-            ballLaunched = true;
-            ball.speedX = 5 + currentRound;
-            ball.speedY = -5 - currentRound;
+            game->ballLaunched = true;
+            game->ball.speedX = 5 + game->currentRound;
+            game->ball.speedY = -5 - game->currentRound;
         }
     }
     else 
     {
-        ball.x += ball.speedX;
-        ball.y += ball.speedY;
+        game->ball.x += game->ball.speedX;
+        game->ball.y += game->ball.speedY;
 
-        if (ball.x < 0 || ball.x + ball.w > SCREEN_WIDTH) 
+        if (game->ball.x < 0 || game->ball.x + game->ball.w > SCREEN_WIDTH) 
         {
-            ball.speedX = -ball.speedX;
+            game->ball.speedX = -game->ball.speedX;
         }
-        if (ball.y < 0) 
+        if (game->ball.y < 0) 
         {
-            ball.speedY = -ball.speedY;
+            game->ball.speedY = -game->ball.speedY;
         }
-        if (ball.y + ball.h > SCREEN_HEIGHT) 
+        if (game->ball.y + game->ball.h > SCREEN_HEIGHT) 
         {
-            lives--;
-            if (lives <= 0) 
+            game->lives--;
+            if (game->lives <= 0) 
             {
-                gameOver = true;
+                game->gameOver = true;
                 return;
             }
             else 
             {
-                ballLaunched = false;
-                ball.speedX = 0;
-                ball.speedY = 0;
+                game->ballLaunched = false;
+                game->ball.speedX = 0;
+                game->ball.speedY = 0;
             }
         }
 
-        SDL_Rect ballRect = { ball.x, ball.y, ball.w, ball.h };
-        SDL_Rect paddleRect = { paddle.x, paddle.y, paddle.w, paddle.h };
+        SDL_Rect ballRect = { game->ball.x, game->ball.y, game->ball.w, game->ball.h };
+        SDL_Rect paddleRect = { game->paddle.x, game->paddle.y, game->paddle.w, game->paddle.h };
 
         if (SDL_HasIntersection(&ballRect, &paddleRect)) 
         {
-            ball.speedY = -ball.speedY;
-            ball.y = paddle.y - ball.h;
+            game->ball.speedY = -game->ball.speedY;
+            game->ball.y = game->paddle.y - game->ball.h;
         }
 
-        for (int i = 0; i < brickRows * brickCols; i++) 
+        // Обработка столкновений мяча с кирпичами
+        for (int i = 0; i < MAX_BRICKS; i++) 
         {
-            Brick& brick = bricks[i];
-            SDL_Rect brickRect = { brick.x, brick.y, brick.w, brick.h };
-            if (!brick.destroyed && SDL_HasIntersection(&ballRect, &brickRect)) 
+            if (!game->bricks[i].destroyed) 
             {
-                brick.destroyed = true;
-                ball.speedY = -ball.speedY;
-                score += 100;
-
-                if (score > highScore) 
+                SDL_Rect brickRect = { game->bricks[i].x, game->bricks[i].y, game->bricks[i].w, game->bricks[i].h };
+                if (SDL_HasIntersection(&ballRect, &brickRect)) 
                 {
-                    highScore = score;
-                }
+                    game->bricks[i].destroyed = true;
+                    game->ball.speedY = -game->ball.speedY;
+                    game->score += 50;
 
-                // Бонус
-                if (rand() % 10 == 0) 
-                {
-                    powerUp.x = brick.x;
-                    powerUp.y = brick.y;
-                    powerUp.type = rand() % 3;
-                    powerUp.active = true;
+                    if (game->score > game->highScore) 
+                    {
+                        game->highScore = game->score;
+                    }
+
+                    // Генерация бонуса
+                    if (rand() % 10 == 0) 
+                    {
+                        AddPowerUp(game, game->bricks[i].x, game->bricks[i].y, rand() % 3);
+                    }
+                    break;
                 }
-                break;
             }
         }
     }
 
-    // Обновление бонуса
-    if (powerUp.active) 
+    SDL_Rect paddleRectt = { game->paddle.x, game->paddle.y, game->paddle.w, game->paddle.h };
+
+    // Обновление бонусов
+    for (int i = 0; i < game->powerUpCount; i++) 
     {
-        powerUp.y += 5;
-        SDL_Rect powerUpRect = { powerUp.x, powerUp.y, powerUp.w, powerUp.h };
-        SDL_Rect paddleRect = { paddle.x, paddle.y, paddle.w, paddle.h };
-
-        if (SDL_HasIntersection(&powerUpRect, &paddleRect)) 
+        if (game->powerUps[i].active) 
         {
-            powerUp.active = false;
-            switch (powerUp.type) 
+            game->powerUps[i].y += 5;
+
+            SDL_Rect powerUpRect = { game->powerUps[i].x, 
+                game->powerUps[i].y, 
+                game->powerUps[i].w, 
+                game->powerUps[i].h };
+
+            if (SDL_HasIntersection(&powerUpRect, &paddleRectt)) 
             {
-            case 0: // Увеличение платформы
-                paddle.w += 20;
-                break;
-            case 1: // Дополнительная жизнь
-                lives++;
-                break;
-            case 2: // Увеличение скорости
-                paddle.speed += 2;
-                break;
+                game->powerUps[i].active = false;
+                switch (game->powerUps[i].type) 
+                {
+                case 0:
+                    game->paddle.w += 40;
+                    break;
+                case 1:
+                    game->lives++;
+                    break;
+                case 2:
+                    game->paddle.speed += 3;
+                    break;
+                }
             }
-        }
-
-        if (powerUp.y > SCREEN_HEIGHT) 
-        {
-            powerUp.active = false;
+            if (game->powerUps[i].y > SCREEN_HEIGHT) 
+            {
+                game->powerUps[i].active = false;
+            }
         }
     }
 }
 
-void RenderGame()
+void RenderGame(Game* game) 
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
     RenderBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    SDL_Rect paddleRect = { paddle.x, paddle.y, paddle.w, paddle.h };
+    SDL_Rect paddleRect = { game->paddle.x, game->paddle.y, game->paddle.w, game->paddle.h };
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &paddleRect);
 
-    SDL_Rect ballRect = { ball.x, ball.y, ball.w, ball.h };
+    SDL_Rect ballRect = { game->ball.x, game->ball.y, game->ball.w, game->ball.h };
     SDL_RenderFillRect(renderer, &ballRect);
 
-    for (int i = 0; i < brickRows * brickCols; i++)
+    for (int i = 0; i < MAX_BRICKS; i++) 
     {
-        if (!bricks[i].destroyed)
+        if (!game->bricks[i].destroyed) 
         {
-            SDL_Rect brickRect = { bricks[i].x, bricks[i].y, bricks[i].w, bricks[i].h };
-            SDL_SetRenderDrawColor(renderer, bricks[i].color.r,
-                bricks[i].color.g, bricks[i].color.b, bricks[i].color.a);
+            SDL_Rect brickRect = { game->bricks[i].x, game->bricks[i].y, game->bricks[i].w, game->bricks[i].h };
+            SDL_SetRenderDrawColor(renderer, game->bricks[i].color.r,
+                game->bricks[i].color.g, game->bricks[i].color.b, game->bricks[i].color.a);
             SDL_RenderFillRect(renderer, &brickRect);
         }
     }
 
-    // Отрисовка бонуса
-    if (powerUp.active)
+    // Отрисовка бонусов
+    for (int i = 0; i < game->powerUpCount; i++) 
     {
-        SDL_Rect powerUpRect = { powerUp.x, powerUp.y, powerUp.w, powerUp.h };
-        SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
-        SDL_RenderFillRect(renderer, &powerUpRect);
+        if (game->powerUps[i].active) 
+        {
+            SDL_Rect powerUpRect = { game->powerUps[i].x, 
+                game->powerUps[i].y, 
+                game->powerUps[i].w, 
+                game->powerUps[i].h };
+            SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);  // Ярко-розовый цвет для бонусов
+            SDL_RenderFillRect(renderer, &powerUpRect);
+        }
     }
 
     TTF_Font* font = TTF_OpenFont("fonts/videotype.otf", 24);
@@ -221,11 +262,11 @@ void RenderGame()
         SDL_Color white = { 255, 255, 255, 255 };
 
         char scoreText[50];
-        snprintf(scoreText, sizeof(scoreText), "SCORE: %d", score);
+        snprintf(scoreText, sizeof(scoreText), "SCORE: %d", game->score);
         RenderText(scoreText, 20, 10, font, white);
 
         char livesText[50];
-        snprintf(livesText, sizeof(livesText), "LIVES: %d", lives);
+        snprintf(livesText, sizeof(livesText), "LIVES: %d", game->lives);
         RenderText(livesText, SCREEN_WIDTH - 120, 10, font, white);
 
         TTF_CloseFont(font);
@@ -234,7 +275,8 @@ void RenderGame()
     SDL_RenderPresent(renderer);
 }
 
-int ShowEndGameMenu(int score) 
+
+int ShowEndGameMenu(int score, int highScore) 
 {
     SDL_Event event;
     int running = 1;
@@ -243,18 +285,18 @@ int ShowEndGameMenu(int score)
     TTF_Font* font = TTF_OpenFont("fonts/videotype.otf", 24);
     TTF_Font* largeFont = TTF_OpenFont("fonts/videotype.otf", 74);
 
-
     SDL_Color white = { 255, 255, 255, 255 };
     SDL_Color blue = { 82, 255, 255, 255 };
     SDL_Color purple = { 252, 86, 254, 255 };
 
-    const char* menuItems[] = {
-        "Restart",
-        "Main Menu"
-    };
-
+    const char* menuItems[] = { "Restart", "Main Menu" };
     int menuItemCount = sizeof(menuItems) / sizeof(menuItems[0]);
     int currentSelection = 0;
+    char scoreText[50];
+    char highScoreText[50];
+
+    sprintf_s(scoreText, "YOUR SCORE: %d", score);
+    sprintf_s(highScoreText, "HIGH SCORE: %d", highScore);
 
     while (running) 
     {
@@ -283,7 +325,7 @@ int ShowEndGameMenu(int score)
                     }
                     else if (currentSelection == 1) 
                     {
-                        restart = 0; // Возврат в главное меню
+                        restart = 0;
                         running = 0;
                     }
                     break;
@@ -296,32 +338,17 @@ int ShowEndGameMenu(int score)
 
         RenderBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        char gameOverText[50];
-        snprintf(gameOverText, sizeof(gameOverText), "GAME OVER");
-        RenderText(gameOverText, SCREEN_WIDTH / 2 - 200, SCREEN_HEIGHT / 2 - 150, largeFont, purple);
+        RenderCenteredText("GAME OVER", largeFont, purple, SCREEN_HEIGHT / 4);
+        RenderCenteredText(scoreText, font, white, SCREEN_HEIGHT / 2 - 50);
+        RenderCenteredText(highScoreText, font, white, SCREEN_HEIGHT / 2);
 
-        char scoreText[50];
-        snprintf(scoreText, sizeof(scoreText), "SCORE: %d", score);
-        RenderText(scoreText, SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 - 50, font, white);
 
-        char highScoreText[50];
-        snprintf(highScoreText, sizeof(highScoreText), "HIGH SCORE: %d", highScore);
-        RenderText(highScoreText, SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2, font, white);
-
-        int y = SCREEN_HEIGHT / 2 + 50;
         for (int i = 0; i < menuItemCount; i++) 
         {
-            int width, height;
-            TTF_SizeText(font, menuItems[i], &width, &height);
-            RenderText(menuItems[i], SCREEN_WIDTH / 2 - width / 2, 
-                y, font, (i == currentSelection) ? blue : white);
-            y += height + 10;
+            RenderCenteredText(menuItems[i], font, 
+                (i == currentSelection) ? blue : white, SCREEN_HEIGHT / 2 + 50 + i * 50);
         }
-
-        RenderButtonFrame(SCREEN_WIDTH / 2 - 100, 
-            SCREEN_HEIGHT / 2 + 40, 200, 100, purple);
-        RenderWindowFrame(purple, SCREEN_WIDTH, SCREEN_HEIGHT);
-
+        
         SDL_RenderPresent(renderer);
     }
 
@@ -330,51 +357,12 @@ int ShowEndGameMenu(int score)
     return restart;
 }
 
-void RenderEndScreen() 
-{
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-
-    RenderBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-    TTF_Font* font = TTF_OpenFont("fonts/videotype.otf", 24);
-    TTF_Font* largeFont = TTF_OpenFont("fonts/videotype.otf", 74);
-
-    if (font && largeFont) 
-    {
-        SDL_Color white = { 255, 255, 255, 255 };
-        SDL_Color purple = { 252, 86, 254, 255 };
-
-        char gameOverText[50];
-        snprintf(gameOverText, sizeof(gameOverText), "GAME OVER");
-        RenderText(gameOverText, SCREEN_WIDTH / 2 - 200, 
-            SCREEN_HEIGHT / 2 - 150, largeFont, purple);
-
-        char scoreText[50];
-        snprintf(scoreText, sizeof(scoreText), "SCORE: %d", score);
-        RenderText(scoreText, SCREEN_WIDTH / 2 - 50, 
-            SCREEN_HEIGHT / 2 - 50, font, white);
-
-        char highScoreText[50];
-        snprintf(highScoreText, sizeof(highScoreText), "HIGH SCORE: %d", highScore);
-        RenderText(highScoreText, SCREEN_WIDTH / 2 - 50, 
-            SCREEN_HEIGHT / 2, font, white);
-
-        RenderWindowFrame(purple, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-        TTF_CloseFont(font);
-        TTF_CloseFont(largeFont);
-    }
-
-    SDL_RenderPresent(renderer);
-}
-
-int GameLoop() 
+int GameLoop(Game* game)
 {
     SDL_Event event;
     int running = 1;
 
-    InitGame();
+    InitGame(game);
 
     while (running) 
     {
@@ -390,13 +378,13 @@ int GameLoop()
                 {
                     running = 0;
                 }
-                else if (event.key.keysym.sym == SDLK_RETURN && gameOver) 
+                else if (event.key.keysym.sym == SDLK_RETURN && game->gameOver) 
                 {
-                    int result = ShowEndGameMenu(score);
+                    int result = ShowEndGameMenu(game->score, game->highScore);
                     if (result == 1) 
                     {
-                        InitGame();
-                        gameOver = false;
+                        InitGame(game);
+                        game->gameOver = false;
                     }
                     else if (result == 0) 
                     {
@@ -410,14 +398,27 @@ int GameLoop()
             }
         }
 
-        if (gameOver) 
+        if (game->gameOver) 
         {
-            RenderEndScreen();
+            int result = ShowEndGameMenu(game->score, game->highScore);
+            if (result == 1) 
+            {
+                InitGame(game);
+                game->gameOver = false;
+            }
+            else if (result == 0) 
+            {
+                running = 0;
+            }
+            else if (result == -1) 
+            {
+                running = 0;
+            }
         }
         else 
         {
-            UpdateGame();
-            RenderGame();
+            UpdateGame(game);
+            RenderGame(game);
         }
 
         SDL_Delay(16);

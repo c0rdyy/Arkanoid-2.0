@@ -11,22 +11,14 @@ void RenderText(const char* text, int x, int y, TTF_Font* font, SDL_Color color)
     SDL_DestroyTexture(texture);
 }
 
-SDL_Texture* LoadTexture(const char* file) 
+void RenderCenteredText(const char* text, TTF_Font* font, SDL_Color color, int y) 
 {
-    SDL_Texture* texture = IMG_LoadTexture(renderer, file);
-    if (texture == NULL) 
-    {
-        SDL_Log("Unable to load texture: %s", IMG_GetError());
-    }
-    return texture;
-}
-
-void RenderTexture(SDL_Texture* tex, SDL_Renderer* ren, int x, int y, int w, int h) 
-{
-    SDL_Rect dst;
-    dst.x = x;
-    dst.y = y;
-    dst.w = w;
-    dst.h = h;
-    SDL_RenderCopy(ren, tex, NULL, &dst);
+    SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    int textWidth = surface->w;
+    int textHeight = surface->h;
+    SDL_Rect renderQuad = { (SCREEN_WIDTH - textWidth) / 2, y, textWidth, textHeight };
+    SDL_RenderCopy(renderer, texture, NULL, &renderQuad);
+    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
 }

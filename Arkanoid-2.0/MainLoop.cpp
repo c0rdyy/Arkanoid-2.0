@@ -14,6 +14,9 @@ void MainLoop()
     int inGame = 0;
     int gameMode = 1;
 
+    Game game;
+    InitGame(&game);
+
     while (running)
     {
         if (!inGame)
@@ -22,7 +25,7 @@ void MainLoop()
         }
         else
         {
-            int result = GameLoop();
+            int result = GameLoop(&game);
 
             if (result == -1) 
             {

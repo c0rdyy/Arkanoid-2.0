@@ -182,24 +182,30 @@ int ShowGameRulesMenu()
 	TTF_Font* font = TTF_OpenFont("fonts/videotype.otf", 24);
 	TTF_Font* titleFont = TTF_OpenFont("fonts/AvalonRegular.ttf", 74);
 
-	if (!font || !titleFont)
+	SDL_Color colors[] = 
 	{
-		SDL_Log("Failed to load font: %s", TTF_GetError());
-		return 0;
-	}
+	{255, 0, 0, 255},      // Красный
+	{0, 255, 0, 255},      // Зеленый
+	{0, 0, 255, 255},      // Синий
+	{255, 255, 0, 255},    // Желтый
+	{82, 255, 255, 255},   // Светло-голубой
+	{252, 86, 254, 255},   // Фиолетовый
+	{0, 0, 0, 255},        // Черный
+	{255, 255, 255, 255},  // Белый
+	{252, 0, 0, 255},      // Темно-красный
+	{163, 13, 3, 255}      // barn red
+	};
 
-	SDL_Color white = { 255, 255, 255, 255 };
-	SDL_Color blue = { 82, 255, 255, 255 };
-	SDL_Color purple = { 252, 86, 254, 255 };
-	SDL_Color red = { 252, 0, 0, 255 };
-
-	const char* rulesText[] = 
+	const char* rulesText[] =
 	{
 		"Game Rules:",
 		"1. Use the arrow keys to move the paddle.",
 		"2. Break all the bricks to advance to the next level.",
 		"3. Don't let the ball fall below the paddle.",
 		"4. Collect power-ups for bonuses.",
+		"Red bonus - platform increase",
+		"Green bonus - extra life",
+		"Blue bonus - platform acceleration",
 		"Press any key for exit"
 	};
 	int rulesTextCount = sizeof(rulesText) / sizeof(rulesText[0]);
@@ -227,7 +233,7 @@ int ShowGameRulesMenu()
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
-					running = 0; // Возврат в главное меню при клике
+					running = 0;
 				}
 			}
 		}
@@ -241,35 +247,46 @@ int ShowGameRulesMenu()
 		int titleWidth, titleHeight;
 		TTF_SizeText(titleFont, "Game Rules", &titleWidth, &titleHeight);
 		int titleX = (windowWidth - titleWidth) / 2;
-		int titleY = 120;
-		RenderText("Game Rules", titleX, titleY, titleFont, purple);
+		int titleY = 80;
+		RenderText("Game Rules", titleX, titleY, titleFont, colors[5]);
 
 		// Отрисовка текста правил
-		int y = titleY + titleHeight + 20;
+		int y = titleY + titleHeight + 10;
+
 		for (int i = 0; i < rulesTextCount; i++)
 		{
 			int width, height;
 			TTF_SizeText(font, rulesText[i], &width, &height);
 			int x = (windowWidth - width) / 2;
 
-			if (i == 5)
+			SDL_Color textColor = colors[7];
+			if (i == 5) 
 			{
-				RenderText(rulesText[i], x, y, font, red);
+				textColor = colors[0];
 			}
 			else if (i == 0)
 			{
-				RenderText(rulesText[i], x, y, font, blue);
+				textColor = colors[4];
 			}
-			else
+			else if (i == 6)
 			{
-				RenderText(rulesText[i], x, y, font, white);
+				textColor = colors[1];
 			}
+			else if (i == 7) 
+			{
+				textColor = colors[2];
+			}
+			else if (i == 8)
+			{
+				textColor = colors[4];
+			}
+
+			RenderText(rulesText[i], x, y, font, textColor);
 			y += height + 10;
 
-			
 		}
 
-		RenderWindowFrame(purple, windowWidth, windowHeight);
+		RenderWindowFrame(colors[5], windowWidth, windowHeight);
 
 		SDL_RenderPresent(renderer);
 	}
@@ -277,7 +294,7 @@ int ShowGameRulesMenu()
 	TTF_CloseFont(font);
 	TTF_CloseFont(titleFont);
 
-	return 0; // Возврат в главное меню
+	return 0;
 }
 
 // Функция для главного меню

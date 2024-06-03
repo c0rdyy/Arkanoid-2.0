@@ -1,28 +1,162 @@
 #include "Game.h"
 
-int brickRows = 5;
-int brickCols = 10;
-int brickWidth = 60;
-int brickHeight = 20;
+// Функция инициализации уровня 1
+void InitLevel1(Game* game) 
+{
+    int brickRows = 8;
+    int brickCols = 8;
 
-int totalBrickWidth = brickCols * brickWidth;
-int totalSpacing = SCREEN_WIDTH - totalBrickWidth;
-int spacingBetweenBricks = totalSpacing / (brickCols + 1);
+    int brickWidth = 70;
+    int brickHeight = 25;
+    int padding = 6;
 
-// Функция для инициализации игры
+    // Расчет общей ширины кирпичей
+    int totalBricksWidth = brickCols * (brickWidth + padding) - padding;
+
+    // Расчет начальной позиции по x и y
+    int startX = (SCREEN_WIDTH - totalBricksWidth) / 2;
+    int startY = 60;
+
+    SDL_Color colors[3] =
+    {
+        {255, 0, 0, 255},    // Красный
+        {255, 165, 0, 255},  // Оранжевый
+        {255, 255, 0, 255},  // Жёлтый
+    };  
+
+    game->brickCount = 0;
+
+    for (int i = 0; i < brickRows; i++) 
+    {
+        SDL_Color currentColor = colors[rand() % 3];
+
+        for (int j = 0; j < brickCols; j++) 
+        {
+            if (game->brickCount >= MAX_BRICKS) 
+            {
+                break;
+            }
+            game->bricks[game->brickCount] = 
+            {
+                startX + j * (brickWidth + padding),
+                startY + i * (brickHeight + padding),
+                brickWidth,
+                brickHeight,
+                currentColor,
+                false
+            };
+            game->brickCount++;
+        }
+    }
+}
+
+// Функция инициализации уровня 2 (кирпичная стена)
+void InitLevel2(Game* game) 
+{
+    int brickCols = 1;
+    int brickRows = 1;
+
+    int brickWidth = 70;
+    int brickHeight = 25;
+
+    int padding = 6;
+
+    SDL_Color colors[3] =
+    {
+        {251, 0, 255, 255},  // Фиолетовый
+        {0, 208, 255, 255},    // Голубой
+        {255, 0, 136, 255}    // Малиновый
+    };
+
+    int totalBricksWidth = brickCols * (brickWidth + padding) - padding;
+    int startX = (SCREEN_WIDTH - totalBricksWidth) / 2;
+    int startY = 60;
+
+    for (int i = 0; i < brickRows; i++)
+    {
+        SDL_Color currentColor = colors[rand() % 3];
+
+        int rowStartX = startX + (i % 2 == 0 ? 0 : brickWidth / 2);
+
+        for (int j = 0; j < brickCols; j++)
+        {
+            if (game->brickCount >= MAX_BRICKS)
+            {
+                break;
+            }
+            game->bricks[game->brickCount] =
+            {
+                rowStartX + j * (brickWidth + padding),
+                startY + i * (brickHeight + padding),
+                brickWidth,
+                brickHeight,
+                currentColor,
+                false
+            };
+            game->brickCount++;
+        }
+    }
+}
+
+// Функция инициализации уровня 3
+void InitLevel3(Game* game) 
+{
+
+}
+
+// Общая функция инициализации уровней
+void InitLevel(Game* game) 
+{
+    // Увеличение скорости мяча
+    game->ballSpeed = 6 + game->currentLevel - 1;
+
+    if (game->paddleWidthTimer > 0) 
+    {
+        game->paddle.w -= 40;
+        game->paddleWidthTimer = 0;
+    }
+    if (game->paddleSpeedTimer > 0) 
+    {
+        game->paddle.speed -= 3;
+        game->paddleSpeedTimer = 0;
+    }
+
+    switch (game->currentLevel) 
+    {
+    case 1:
+        InitLevel1(game);
+        break;
+    case 2:
+        InitLevel2(game);
+        break;
+    case 3:
+        InitLevel3(game);
+        break;
+    default:
+        InitLevel1(game);
+        break;
+    }
+}
+
+// Функция инициализации игры
 void InitGame(Game* game)
 {
+    srand(time(NULL));
+
     // Установка начальных значений
     game->gameOver = false;
     game->score = 0;
     game->highScore = 0;
     game->lives = 3;
-    game->currentRound = 1;
     game->ballLaunched = false;
     game->powerUpCount = 0;
+    game->ballSpeed = 6;
+    game->currentLevel = 1;
+
+    InitLevel(game);
 
     // Инициализация параметров платформы
-    game->paddle = { 300, 550, 100, 20, 10 };
+    game->paddle = { 350, 550, 100, 20, 10 };
 
     // Инициализация параметров мяча
     game->ball = { 350, 530, 10, 10, 0, 0 };
@@ -33,33 +167,21 @@ void InitGame(Game* game)
         game->powerUps[i].active = false;
     }
 
-    SDL_Color colors[5] = 
-    {
-        {255, 0, 0, 255},
-        {255, 165, 0, 255},
-        {255, 255, 0, 255},
-        {0, 255, 0, 255},
-        {0, 0, 255, 255}
-    };
-
-    for (int i = 0; i < brickRows; i++) 
-    {
-        for (int j = 0; j < brickCols; j++) 
-        {
-            int index = i * brickCols + j;
-            game->bricks[index] = 
-            { 
-                j * (brickWidth + spacingBetweenBricks) + spacingBetweenBricks, 
-                i * (brickHeight + 5) + 50, 
-                brickWidth, 
-                brickHeight, 
-                colors[i % 5], 
-                false 
-            };
-        }
-    }
 }
 
+bool AllBricksDestroyed(Game* game) 
+{
+    for (int i = 0; i < game->brickCount; i++) 
+    {
+        if (!game->bricks[i].destroyed) 
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Функция для добавления бонусов
 void AddPowerUp(Game* game, int x, int y, int type) 
 {
     for (int i = 0; i < MAX_POWERUPS; i++) 
@@ -68,14 +190,46 @@ void AddPowerUp(Game* game, int x, int y, int type)
         {
             game->powerUps[i].x = x;
             game->powerUps[i].y = y;
-            game->powerUps[i].w = 20;  // Ширина бонуса
-            game->powerUps[i].h = 20;  // Высота бонуса
+            game->powerUps[i].w = 20;
+            game->powerUps[i].h = 20;
             game->powerUps[i].type = type;
             game->powerUps[i].active = true;
             game->powerUpCount++;
             break;
         }
     }
+}
+
+// Функция для сброса позиции мяча и платформы
+void ResetBallAndPaddle(Game* game)
+{
+    // Сброс мяча
+    game->ball.x = game->paddle.x + game->paddle.w / 2 - game->ball.w / 2;
+    game->ball.y = game->paddle.y - game->ball.h - 5;
+    game->ball.speedX = 0;
+    game->ball.speedY = 0;
+    game->ballLaunched = false;
+
+    // Сброс платформы
+    game->paddle.x = 350;
+    game->paddle.y = 550;
+    game->paddle.w = 100;
+    game->paddle.h = 20;
+    game->paddle.speed = 10;
+}
+
+// Функция для подсчета оставшихся кирпичей
+int CountRemainingBricks(Game* game) 
+{
+    int count = 0;
+    for (int i = 0; i < MAX_BRICKS; i++) 
+    {
+        if (!game->bricks[i].destroyed) 
+        {
+            count++;
+        }
+    }
+    return count;
 }
 
 // Функция для обновления состояния игры
@@ -109,8 +263,10 @@ void UpdateGame(Game* game)
         if (keystates[SDL_SCANCODE_SPACE]) 
         {
             game->ballLaunched = true;
-            game->ball.speedX = 5 + game->currentRound;
-            game->ball.speedY = -5 - game->currentRound;
+
+            int directionX = (rand() % 2) * 2 - 1;
+            game->ball.speedX = directionX * 6;
+            game->ball.speedY = -6;
         }
     }
     else 
@@ -126,19 +282,18 @@ void UpdateGame(Game* game)
         {
             game->ball.speedY = -game->ball.speedY;
         }
+        
+        // Падение мяча за нижнюю границу экрана
         if (game->ball.y + game->ball.h > SCREEN_HEIGHT) 
         {
             game->lives--;
             if (game->lives <= 0) 
             {
                 game->gameOver = true;
-                return;
             }
             else 
             {
-                game->ballLaunched = false;
-                game->ball.speedX = 0;
-                game->ball.speedY = 0;
+                ResetBallAndPaddle(game);
             }
         }
 
@@ -169,7 +324,7 @@ void UpdateGame(Game* game)
                     }
 
                     // Генерация бонуса
-                    if (rand() % 5 == 0) 
+                    if (rand() % 20 == 0) 
                     {
                         AddPowerUp(game, game->bricks[i].x, game->bricks[i].y, rand() % 3);
                     }
@@ -181,42 +336,87 @@ void UpdateGame(Game* game)
 
     SDL_Rect paddleRectt = { game->paddle.x, game->paddle.y, game->paddle.w, game->paddle.h };
 
-    // Обновление бонусов
-    for (int i = 0; i < game->powerUpCount; i++) 
+    // Сброс бонусов
+    if (game->paddleWidthTimer > 0) 
     {
-        if (game->powerUps[i].active) 
+        game->paddleWidthTimer--;
+        if (game->paddleWidthTimer == 0) 
         {
-            game->powerUps[i].y += 5;
+            game->paddle.w -= 40;
+        }
+    }
+    if (game->paddleSpeedTimer > 0) 
+    {
+        game->paddleSpeedTimer--;
+        if (game->paddleSpeedTimer == 0) 
+        {
+            game->paddle.speed -= 3;
+        }
+    }
 
-            SDL_Rect powerUpRect = { game->powerUps[i].x, 
+    // Обновление бонусов
+    for (int i = 0; i < game->powerUpCount; i++)
+    {
+        if (game->powerUps[i].active)
+        {
+            game->powerUps[i].y += 5;  // Падение бонуса
+
+            SDL_Rect powerUpRect = 
+            { 
+                game->powerUps[i].x, 
                 game->powerUps[i].y, 
                 game->powerUps[i].w, 
-                game->powerUps[i].h };
+                game->powerUps[i].h 
+            };
 
-            if (SDL_HasIntersection(&powerUpRect, &paddleRectt)) 
+            SDL_Rect paddleRect = 
+            { 
+                game->paddle.x, 
+                game->paddle.y, 
+                game->paddle.w, 
+                game->paddle.h 
+            };
+
+            if (SDL_HasIntersection(&powerUpRect, &paddleRect))
             {
                 game->powerUps[i].active = false;
-                switch (game->powerUps[i].type) 
+
+                // Активация бонуса
+                switch (game->powerUps[i].type)
                 {
-                case 0:
+                case 0:  // Увеличение ширины
                     game->paddle.w += 40;
+                    game->paddleWidthTimer = 400;
                     break;
-                case 1:
+                case 1:  // Дополнительная жизнь
                     game->lives++;
                     break;
-                case 2:
+                case 2:  // Увеличение скорости
                     game->paddle.speed += 3;
+                    game->paddleSpeedTimer = 400;
                     break;
                 }
             }
-            if (game->powerUps[i].y > SCREEN_HEIGHT) 
+            if (game->powerUps[i].y > SCREEN_HEIGHT)
             {
                 game->powerUps[i].active = false;
             }
         }
     }
+
+    if (AllBricksDestroyed(game))
+    {
+        game->currentLevel++;
+        if (game->currentLevel > MAX_LEVELS)
+        {
+            game->currentLevel = 1;
+        }
+        ResetBallAndPaddle(game);
+        InitLevel(game);
+    }
 }
 
+// Функция для отрисовки игры
 void RenderGame(Game* game) 
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -235,23 +435,42 @@ void RenderGame(Game* game)
     {
         if (!game->bricks[i].destroyed) 
         {
-            SDL_Rect brickRect = { game->bricks[i].x, game->bricks[i].y, game->bricks[i].w, game->bricks[i].h };
+            SDL_Rect brickRect = 
+            { 
+                game->bricks[i].x, 
+                game->bricks[i].y, 
+                game->bricks[i].w, 
+                game->bricks[i].h 
+            };
             SDL_SetRenderDrawColor(renderer, game->bricks[i].color.r,
                 game->bricks[i].color.g, game->bricks[i].color.b, game->bricks[i].color.a);
             SDL_RenderFillRect(renderer, &brickRect);
         }
     }
 
+    // Цвета для бонусов
+    SDL_Color bonusColors[] =
+    {
+        {255, 0, 0, 255}, // Красный
+        {0, 255, 0, 255}, // Зеленый
+        {0, 0, 255, 255} // Синий
+    };
+
     // Отрисовка бонусов
     for (int i = 0; i < game->powerUpCount; i++) 
     {
         if (game->powerUps[i].active) 
         {
-            SDL_Rect powerUpRect = { game->powerUps[i].x, 
+            SDL_Rect powerUpRect = 
+            { 
+                game->powerUps[i].x, 
                 game->powerUps[i].y, 
                 game->powerUps[i].w, 
                 game->powerUps[i].h };
-            SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);  // Ярко-розовый цвет для бонусов
+
+            SDL_Color powerUpColor = bonusColors[game->powerUps[i].type];
+            
+            SDL_SetRenderDrawColor(renderer, powerUpColor.r, powerUpColor.g, powerUpColor.b, powerUpColor.a);
             SDL_RenderFillRect(renderer, &powerUpRect);
         }
     }
@@ -275,7 +494,7 @@ void RenderGame(Game* game)
     SDL_RenderPresent(renderer);
 }
 
-
+// Отрисовка Game Over
 int ShowEndGameMenu(int score, int highScore) 
 {
     SDL_Event event;
@@ -355,6 +574,7 @@ int ShowEndGameMenu(int score, int highScore)
     return restart;
 }
 
+// Основной цикл игры
 int GameLoop(Game* game)
 {
     SDL_Event event;
@@ -396,11 +616,17 @@ int GameLoop(Game* game)
             }
         }
 
-        if (game->gameOver) 
+        if (!game->gameOver) 
+        {
+            UpdateGame(game);
+            RenderGame(game);
+        }
+        else 
         {
             int result = ShowEndGameMenu(game->score, game->highScore);
             if (result == 1) 
             {
+                game->currentLevel = 1;
                 InitGame(game);
                 game->gameOver = false;
             }
@@ -408,15 +634,6 @@ int GameLoop(Game* game)
             {
                 running = 0;
             }
-            else if (result == -1) 
-            {
-                running = 0;
-            }
-        }
-        else 
-        {
-            UpdateGame(game);
-            RenderGame(game);
         }
 
         SDL_Delay(16);

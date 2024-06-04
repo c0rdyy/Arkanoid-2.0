@@ -31,7 +31,8 @@ void MainLoop()
             {
                 running = 0;
             }
-            else {
+            else 
+            {
                 inGame = 0;
             }
         }

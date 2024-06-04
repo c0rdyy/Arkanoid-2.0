@@ -135,6 +135,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Arkanoid-2.0.cpp" />
+    <ClCompile Include="Game-Init.cpp" />
+    <ClCompile Include="Game-Menu.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="MainLoop.cpp" />
     <ClCompile Include="InitDeInit.cpp" />

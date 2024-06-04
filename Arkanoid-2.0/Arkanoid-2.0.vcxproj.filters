@@ -51,6 +51,12 @@
     <ClCompile Include="Shapes.cpp">
       <Filter>Исходные файлы\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Game-Menu.cpp">
+      <Filter>Исходные файлы\Menu\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game-Init.cpp">
+      <Filter>Исходные файлы\Menu\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InitDeInit.h">

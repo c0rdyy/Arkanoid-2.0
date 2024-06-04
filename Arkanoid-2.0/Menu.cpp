@@ -32,10 +32,6 @@ int ShowGameModeMenu(int* gameMode)
 
 	while (running)
 	{
-		// Получить размеры окна
-		int windowWidth, windowHeight;
-		SDL_GetRendererOutputSize(renderer, &windowWidth, &windowHeight);
-
 		// Определение размеров текста
 		int totalHeight = 0;
 		int textWidth = 0;
@@ -50,11 +46,11 @@ int ShowGameModeMenu(int* gameMode)
 				maxWidth = width;
 			}
 		}
-		totalHeight -= 10; // Убираем последний отступ
+		totalHeight -= 10; // Последний отступ
 
 		// Координаты для центрирования
-		int startX = (windowWidth - maxWidth) / 2;
-		int startY = (windowHeight - totalHeight) / 2;
+		int startX = (SCREEN_WIDTH - maxWidth) / 2;
+		int startY = (SCREEN_HEIGHT - totalHeight) / 2;
 
 		while (SDL_PollEvent(&event))
 		{
@@ -134,12 +130,12 @@ int ShowGameModeMenu(int* gameMode)
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 
-		RenderBackground(windowWidth, windowHeight);
+		RenderBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		// Отрисовка Game Mode
 		int titleWidth, titleHeight;
 		TTF_SizeText(titleFont, "Game Mode", &titleWidth, &titleHeight);
-		int titleX = (windowWidth - titleWidth) / 2;
+		int titleX = (SCREEN_WIDTH - titleWidth) / 2;
 		int titleY = 110;
 		RenderText("Game Mode", titleX, titleY, titleFont, purple);
 
@@ -147,7 +143,7 @@ int ShowGameModeMenu(int* gameMode)
 		const char* currentModeText = (*gameMode == 1) ? "Current Mode: Classic" : "Current Mode: Timed";
 		int modeWidth, modeHeight;
 		TTF_SizeText(modeFont, currentModeText, &modeWidth, &modeHeight);
-		int modeX = (windowWidth - modeWidth) / 2;
+		int modeX = (SCREEN_WIDTH - modeWidth) / 2;
 		int modeY = titleY + titleHeight;
 		RenderText(currentModeText, modeX, modeY, modeFont, blue);
 
@@ -161,7 +157,7 @@ int ShowGameModeMenu(int* gameMode)
 		}
 		RenderButtonFrame(startX - 20, startY - 10, maxWidth + 40, totalHeight + 20, purple);
 
-		RenderWindowFrame(purple, windowWidth, windowHeight);
+		RenderWindowFrame(purple, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		SDL_RenderPresent(renderer);
 	}
@@ -260,25 +256,13 @@ int ShowGameRulesMenu()
 			int x = (windowWidth - width) / 2;
 
 			SDL_Color textColor = colors[7];
-			if (i == 5) 
-			{
-				textColor = colors[0];
-			}
-			else if (i == 0)
+			if (i == 0)
 			{
 				textColor = colors[4];
-			}
-			else if (i == 6)
-			{
-				textColor = colors[1];
-			}
-			else if (i == 7) 
-			{
-				textColor = colors[2];
 			}
 			else if (i == 8)
 			{
-				textColor = colors[4];
+				textColor = colors[0];
 			}
 
 			RenderText(rulesText[i], x, y, font, textColor);

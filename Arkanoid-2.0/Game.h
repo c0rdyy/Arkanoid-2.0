@@ -10,7 +10,7 @@
 #include "Shapes.h"
 #include <math.h>
 
-const int MAX_BRICKS = 100;
+const int MAX_BRICKS = 150;
 const int MAX_POWERUPS = 10;
 const int MAX_LEVELS = 3;
 
@@ -31,6 +31,7 @@ struct Brick
     int x, y, w, h;
     SDL_Color color;
     bool destroyed;
+    int hitPoints;
 };
 
 struct PowerUp 
@@ -48,9 +49,12 @@ struct Game
     Ball ball;
     Brick bricks[MAX_BRICKS];
     PowerUp powerUps[MAX_POWERUPS];
+    Mix_Music* gameMusic = NULL;
     int powerUpCount;
     int score, highScore, lives;
-    bool gameOver, ballLaunched;
+    bool gameOver, victory;
+    bool ballLaunched;
+    bool musicOn;
     int currentLevel;
     int brickCount;
     int paddleWidthTimer;
@@ -58,19 +62,25 @@ struct Game
     int ballSpeed;
 };
 
-int GameLoop(Game* game);
 void InitGame(Game* game);
 void InitLevel(Game* game);
-void AddPowerUp(Game* game, int x, int y, int type);
-void UpdateGame(Game* game);
-void RenderGame(Game* game);
-int ShowEndGameMenu(int score, int highScore);
-bool AllBricksDestroyed(Game* game);
-void ResetBallAndPaddle(Game* game);
-int CountRemainingBricks(Game* game);
 
 void InitLevel1(Game* game);
 void InitLevel2(Game* game);
 void InitLevel3(Game* game);
 
-#endif
+int ShowEndGameMenu(Game* game);
+int ShowVictoryMenu(Game* game);
+int ShowPauseMenu(Game* game);
+
+void UpdateGame(Game* game);
+void RenderGame(Game* game);
+
+int GameLoop(Game* game);
+
+void AddPowerUp(Game* game, int x, int y, int type);
+bool AllBricksDestroyed(Game* game);
+void ResetBallAndPaddle(Game* game);
+int CountRemainingBricks(Game* game);
+
+#endif // !GAME_H

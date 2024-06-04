@@ -1,174 +1,6 @@
 #include "Game.h"
 
-// Функция инициализации уровня 1
-void InitLevel1(Game* game) 
-{
-    int brickRows = 8;
-    int brickCols = 8;
-
-    int brickWidth = 70;
-    int brickHeight = 25;
-    int padding = 6;
-
-    // Расчет общей ширины кирпичей
-    int totalBricksWidth = brickCols * (brickWidth + padding) - padding;
-
-    // Расчет начальной позиции по x и y
-    int startX = (SCREEN_WIDTH - totalBricksWidth) / 2;
-    int startY = 60;
-
-    SDL_Color colors[3] =
-    {
-        {255, 0, 0, 255},    // Красный
-        {255, 165, 0, 255},  // Оранжевый
-        {255, 255, 0, 255},  // Жёлтый
-    };  
-
-    game->brickCount = 0;
-
-    for (int i = 0; i < brickRows; i++) 
-    {
-        SDL_Color currentColor = colors[rand() % 3];
-
-        for (int j = 0; j < brickCols; j++) 
-        {
-            if (game->brickCount >= MAX_BRICKS) 
-            {
-                break;
-            }
-            game->bricks[game->brickCount] = 
-            {
-                startX + j * (brickWidth + padding),
-                startY + i * (brickHeight + padding),
-                brickWidth,
-                brickHeight,
-                currentColor,
-                false
-            };
-            game->brickCount++;
-        }
-    }
-}
-
-// Функция инициализации уровня 2 (кирпичная стена)
-void InitLevel2(Game* game) 
-{
-    int brickCols = 1;
-    int brickRows = 1;
-
-    int brickWidth = 70;
-    int brickHeight = 25;
-
-    int padding = 6;
-
-    SDL_Color colors[3] =
-    {
-        {251, 0, 255, 255},  // Фиолетовый
-        {0, 208, 255, 255},    // Голубой
-        {255, 0, 136, 255}    // Малиновый
-    };
-
-    int totalBricksWidth = brickCols * (brickWidth + padding) - padding;
-    int startX = (SCREEN_WIDTH - totalBricksWidth) / 2;
-    int startY = 60;
-
-    for (int i = 0; i < brickRows; i++)
-    {
-        SDL_Color currentColor = colors[rand() % 3];
-
-        int rowStartX = startX + (i % 2 == 0 ? 0 : brickWidth / 2);
-
-        for (int j = 0; j < brickCols; j++)
-        {
-            if (game->brickCount >= MAX_BRICKS)
-            {
-                break;
-            }
-            game->bricks[game->brickCount] =
-            {
-                rowStartX + j * (brickWidth + padding),
-                startY + i * (brickHeight + padding),
-                brickWidth,
-                brickHeight,
-                currentColor,
-                false
-            };
-            game->brickCount++;
-        }
-    }
-}
-
-// Функция инициализации уровня 3
-void InitLevel3(Game* game) 
-{
-
-}
-
-// Общая функция инициализации уровней
-void InitLevel(Game* game) 
-{
-    // Увеличение скорости мяча
-    game->ballSpeed = 6 + game->currentLevel - 1;
-
-    if (game->paddleWidthTimer > 0) 
-    {
-        game->paddle.w -= 40;
-        game->paddleWidthTimer = 0;
-    }
-    if (game->paddleSpeedTimer > 0) 
-    {
-        game->paddle.speed -= 3;
-        game->paddleSpeedTimer = 0;
-    }
-
-    switch (game->currentLevel) 
-    {
-    case 1:
-        InitLevel1(game);
-        break;
-    case 2:
-        InitLevel2(game);
-        break;
-    case 3:
-        InitLevel3(game);
-        break;
-    default:
-        InitLevel1(game);
-        break;
-    }
-}
-
-// Функция инициализации игры
-void InitGame(Game* game)
-{
-    srand(time(NULL));
-
-    // Установка начальных значений
-    game->gameOver = false;
-    game->score = 0;
-    game->highScore = 0;
-    game->lives = 3;
-    game->ballLaunched = false;
-    game->powerUpCount = 0;
-    game->ballSpeed = 6;
-    game->currentLevel = 1;
-
-    InitLevel(game);
-
-    // Инициализация параметров платформы
-    game->paddle = { 350, 550, 100, 20, 10 };
-
-    // Инициализация параметров мяча
-    game->ball = { 350, 530, 10, 10, 0, 0 };
-
-    // Инициализация бонусов
-    for (int i = 0; i < MAX_POWERUPS; i++) 
-    {
-        game->powerUps[i].active = false;
-    }
-
-}
-
+// Функция
 bool AllBricksDestroyed(Game* game) 
 {
     for (int i = 0; i < game->brickCount; i++) 
@@ -242,6 +74,21 @@ void UpdateGame(Game* game)
 
     const Uint8* keystates = SDL_GetKeyboardState(NULL);
 
+    if (CountRemainingBricks(game) == 0)
+    {
+        game->currentLevel++;
+        if (game->currentLevel > MAX_LEVELS)
+        {
+            game->victory = true;
+        }
+        else
+        {
+            ResetBallAndPaddle(game);
+            InitLevel(game);
+        }
+        return;
+    }
+
     // Управление платформой
     if (keystates[SDL_SCANCODE_LEFT]) 
     {
@@ -311,25 +158,56 @@ void UpdateGame(Game* game)
         {
             if (!game->bricks[i].destroyed) 
             {
-                SDL_Rect brickRect = { game->bricks[i].x, game->bricks[i].y, game->bricks[i].w, game->bricks[i].h };
-                if (SDL_HasIntersection(&ballRect, &brickRect)) 
-                {
-                    game->bricks[i].destroyed = true;
-                    game->ball.speedY = -game->ball.speedY;
-                    game->score += 50;
+                SDL_Rect brickRect = 
+                { 
+                    game->bricks[i].x, 
+                    game->bricks[i].y, 
+                    game->bricks[i].w, 
+                    game->bricks[i].h 
+                };
 
-                    if (game->score > game->highScore) 
+                if (SDL_HasIntersection(&ballRect, &brickRect))
+                {
+                    // Определение стороны столкновения
+                    int ballCenterX = game->ball.x + game->ball.w / 2;
+                    int ballCenterY = game->ball.y + game->ball.h / 2;
+                    int brickCenterX = game->bricks[i].x + game->bricks[i].w / 2;
+                    int brickCenterY = game->bricks[i].y + game->bricks[i].h / 2;
+
+                    int dx = ballCenterX - brickCenterX;
+                    int dy = ballCenterY - brickCenterY;
+
+                    if (abs(dx) > abs(dy))
                     {
-                        game->highScore = game->score;
+                        // Столкновение с левой или правой стороной
+                        game->ball.speedX = -game->ball.speedX;
+                    }
+                    else
+                    {
+                        // Столкновение с верхней или нижней стороной
+                        game->ball.speedY = -game->ball.speedY;
                     }
 
-                    // Генерация бонуса
-                    if (rand() % 20 == 0) 
+                    game->bricks[i].hitPoints--;
+                    if (game->bricks[i].hitPoints <= 0)
                     {
-                        AddPowerUp(game, game->bricks[i].x, game->bricks[i].y, rand() % 3);
+                        game->bricks[i].destroyed = true;
+                        game->score += 50;
+
+                        if (game->score > game->highScore)
+                        {
+                            game->highScore = game->score;
+                        }
+
+                        // Генерация бонуса
+                        if (rand() % 20 == 0)
+                        {
+                            AddPowerUp(game, game->bricks[i].x, game->bricks[i].y, rand() % 3);
+                        }
                     }
                     break;
                 }
+                
             }
         }
     }
@@ -409,10 +287,13 @@ void UpdateGame(Game* game)
         game->currentLevel++;
         if (game->currentLevel > MAX_LEVELS)
         {
-            game->currentLevel = 1;
+            game->victory = true;
         }
-        ResetBallAndPaddle(game);
-        InitLevel(game);
+        else
+        {
+            ResetBallAndPaddle(game);
+            InitLevel(game);
+        }  
     }
 }
 
@@ -494,86 +375,6 @@ void RenderGame(Game* game)
     SDL_RenderPresent(renderer);
 }
 
-// Отрисовка Game Over
-int ShowEndGameMenu(int score, int highScore) 
-{
-    SDL_Event event;
-    int running = 1;
-    int restart = 0;
-
-    TTF_Font* font = TTF_OpenFont("fonts/videotype.otf", 24);
-    TTF_Font* largeFont = TTF_OpenFont("fonts/videotype.otf", 74);
-
-    SDL_Color white = { 255, 255, 255, 255 };
-    SDL_Color blue = { 82, 255, 255, 255 };
-    SDL_Color purple = { 252, 86, 254, 255 };
-
-    const char* menuItems[] = { "Restart", "Main Menu" };
-    int menuItemCount = sizeof(menuItems) / sizeof(menuItems[0]);
-    int currentSelection = 0;
-    char scoreText[50];
-    char highScoreText[50];
-
-    sprintf_s(scoreText, "YOUR SCORE: %d", score);
-
-    while (running) 
-    {
-        while (SDL_PollEvent(&event)) 
-        {
-            if (event.type == SDL_QUIT) 
-            {
-                running = 0;
-                restart = -1;
-            }
-            else if (event.type == SDL_KEYDOWN) 
-            {
-                switch (event.key.keysym.sym) 
-                {
-                case SDLK_UP:
-                    currentSelection = (currentSelection - 1 + menuItemCount) % menuItemCount;
-                    break;
-                case SDLK_DOWN:
-                    currentSelection = (currentSelection + 1) % menuItemCount;
-                    break;
-                case SDLK_RETURN:
-                    if (currentSelection == 0) 
-                    {
-                        restart = 1;
-                        running = 0;
-                    }
-                    else if (currentSelection == 1) 
-                    {
-                        restart = 0;
-                        running = 0;
-                    }
-                    break;
-                }
-            }
-        }
-
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-
-        RenderBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-        RenderCenteredText("GAME OVER", largeFont, purple, SCREEN_HEIGHT / 4);
-        RenderCenteredText(scoreText, font, white, SCREEN_HEIGHT / 2 - 50);
-
-
-        for (int i = 0; i < menuItemCount; i++) 
-        {
-            RenderCenteredText(menuItems[i], font, 
-                (i == currentSelection) ? blue : white, SCREEN_HEIGHT / 2 + i * 50);
-        }
-        
-        SDL_RenderPresent(renderer);
-    }
-
-    TTF_CloseFont(font);
-    TTF_CloseFont(largeFont);
-    return restart;
-}
-
 // Основной цикл игры
 int GameLoop(Game* game)
 {
@@ -588,17 +389,33 @@ int GameLoop(Game* game)
         {
             if (event.type == SDL_QUIT) 
             {
-                running = 0;
+                return -1;
             }
             else if (event.type == SDL_KEYDOWN) 
             {
                 if (event.key.keysym.sym == SDLK_ESCAPE) 
                 {
-                    running = 0;
+                    int result = ShowPauseMenu(game);
+                    if (result == 1)
+                    {
+
+                    }
+                    else if (result == 2)
+                    {
+                        InitGame(game);
+                    }
+                    else if (result == 3)
+                    {
+                        running = 0;
+                    }
+                    else if (result == -1)
+                    {
+                        return -1;
+                    }
                 }
                 else if (event.key.keysym.sym == SDLK_RETURN && game->gameOver) 
                 {
-                    int result = ShowEndGameMenu(game->score, game->highScore);
+                    int result = ShowEndGameMenu(game);
                     if (result == 1) 
                     {
                         InitGame(game);
@@ -613,17 +430,30 @@ int GameLoop(Game* game)
                         running = 0;
                     }
                 }
+                else if (event.key.keysym.sym == SDLK_RETURN && game->victory)
+                {
+                    int result = ShowVictoryMenu(game);
+                    if (result == 1)
+                    {
+                        InitGame(game);
+                        game->victory = false;
+                    }
+                    else if (result == 0 || result == -1)
+                    {
+                        running = 0;
+                    }
+                }
             }
         }
 
-        if (!game->gameOver) 
+        if (!game->gameOver && !game->victory) 
         {
             UpdateGame(game);
             RenderGame(game);
         }
-        else 
+        else if (game->gameOver)
         {
-            int result = ShowEndGameMenu(game->score, game->highScore);
+            int result = ShowEndGameMenu(game);
             if (result == 1) 
             {
                 game->currentLevel = 1;
@@ -633,6 +463,28 @@ int GameLoop(Game* game)
             else if (result == 0) 
             {
                 running = 0;
+            }
+            else if (result == -1)
+            {
+                return -1;
+            }
+        }
+        else if (game->victory)
+        {
+            int result = ShowVictoryMenu(game);
+            if (result == 1)
+            {
+                game->currentLevel = 1;
+                InitGame(game);
+                game->victory = false;
+            }
+            else if (result == 0)
+            {
+                running = 0;
+            }
+            else if (result == -1)
+            {
+                return -1;
             }
         }
 

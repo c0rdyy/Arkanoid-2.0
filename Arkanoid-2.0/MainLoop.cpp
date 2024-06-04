@@ -16,6 +16,8 @@ void MainLoop()
 
     Game game;
     InitGame(&game);
+    Mix_Music* background = NULL;
+
 
     while (running)
     {

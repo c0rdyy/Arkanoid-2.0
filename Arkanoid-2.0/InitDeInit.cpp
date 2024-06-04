@@ -1,7 +1,11 @@
 #include "InitDeInit.h"
 
+Settings globalSettings;
+
 void DeInit(int error)
 {
+	SaveSettings(&globalSettings); // Сохранение настроек
+
 	if (renderer != NULL)
 	{
 		SDL_DestroyRenderer(renderer);
@@ -19,6 +23,7 @@ void DeInit(int error)
 
 void Init()
 {
+
 	// Инициализация библиотеки SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
 	{
@@ -73,6 +78,27 @@ void Init()
 	{
 		printf("SDL_mixer could not initialize! Error: %s\n", Mix_GetError());
 		DeInit(1);
+	}
+
+	Mix_Music* backgroundMusic = Mix_LoadMUS("music/background.mp3");
+	if (!backgroundMusic) 
+	{
+		printf("Failed to load background music! SDL_mixer Error: %s\n", Mix_GetError());
+	}
+	else 
+	{
+		// Воспроизведение музыки
+		if (Mix_PlayMusic(backgroundMusic, -1) == -1) 
+		{
+			printf("Failed to play music! SDL_mixer Error: %s\n", Mix_GetError());
+		}
+	}
+
+	LoadSettings(&globalSettings); // Загрузка настроек
+
+	if (!globalSettings.soundEnabled) 
+	{
+		Mix_PauseMusic(); // Выключение музыки, если звук выключен
 	}
 
 	if (window == NULL)

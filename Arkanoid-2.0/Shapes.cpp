@@ -39,5 +39,4 @@ void RenderWindowFrame(SDL_Color color, int windowWidth, int windowHeight)
 		// Нижняя линия
 		SDL_RenderDrawLine(renderer, 0, windowHeight - i, windowWidth, windowHeight - i);
 	}
-
 }

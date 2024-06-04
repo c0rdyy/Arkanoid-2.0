@@ -9,7 +9,6 @@
 #include "Game.h"
 
 int ShowMainMenu(int* inGame, int* gameMode);
-int ShowGameModeMenu(int* gameMode);
 int ShowGameRulesMenu();
 
 #endif

@@ -243,14 +243,4 @@ void InitGame(Game* game)
     {
         game->powerUps[i].active = false;
     }
-
-    // ¬ключение музыки
-    if (Mix_PlayingMusic() == 0)
-    {
-        Mix_PlayMusic(game->gameMusic, -1);
-    }
-    else
-    {
-        Mix_ResumeMusic();
-    }
 }

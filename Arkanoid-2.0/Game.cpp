@@ -398,13 +398,9 @@ int GameLoop(Game* game)
                     int result = ShowPauseMenu(game);
                     if (result == 1)
                     {
-
-                    }
-                    else if (result == 2)
-                    {
                         InitGame(game);
                     }
-                    else if (result == 3)
+                    else if (result == 2)
                     {
                         running = 0;
                     }

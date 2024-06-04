@@ -1,173 +1,5 @@
 #include "Menu.h"
-
-// Функция для меню выбора игры
-int ShowGameModeMenu(int* gameMode)
-{
-	SDL_Event event;
-	int running = 1;
-
-	TTF_Font* font = TTF_OpenFont("fonts/videotype.otf", 24);
-	TTF_Font* titleFont = TTF_OpenFont("fonts/AvalonRegular.ttf", 74);
-	TTF_Font* modeFont = TTF_OpenFont("fonts/videotype.otf", 26);
-
-	if (!font || !titleFont)
-	{
-		SDL_Log("Failed to load font: %s", TTF_GetError());
-		return 0;
-	}
-
-	SDL_Color white = { 255, 255, 255, 255 };
-	SDL_Color blue = { 82, 255, 255, 255 };
-	SDL_Color purple = { 252, 86, 254, 255 };
-	SDL_Color black = { 0, 0, 0, 255 };
-
-	int currentSelection = 0;
-	const char* menuItems[] =
-	{
-		"Classic",
-		"Timed",
-		"Back"
-	};
-	int menuItemCount = sizeof(menuItems) / sizeof(menuItems[0]);
-
-	while (running)
-	{
-		// Определение размеров текста
-		int totalHeight = 0;
-		int textWidth = 0;
-		int maxWidth = 0;
-		for (int i = 0; i < menuItemCount; i++)
-		{
-			int width, height;
-			TTF_SizeText(font, menuItems[i], &width, &height);
-			totalHeight += height + 10;
-			if (width > maxWidth)
-			{
-				maxWidth = width;
-			}
-		}
-		totalHeight -= 10; // Последний отступ
-
-		// Координаты для центрирования
-		int startX = (SCREEN_WIDTH - maxWidth) / 2;
-		int startY = (SCREEN_HEIGHT - totalHeight) / 2;
-
-		while (SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_QUIT)
-			{
-				running = 0;
-				*gameMode = -1; // Выход из игры
-			}
-			else if (event.type == SDL_KEYDOWN)
-			{
-				switch (event.key.keysym.sym)
-				{
-				case SDLK_UP:
-					currentSelection = (currentSelection - 1 + menuItemCount) % menuItemCount;
-					break;
-				case SDLK_DOWN:
-					currentSelection = (currentSelection + 1) % menuItemCount;
-					break;
-				case SDLK_RETURN:
-					if (currentSelection == 0)
-					{
-						*gameMode = 1; // Классический режим
-						running = 0;
-					}
-					else if (currentSelection == 1)
-					{
-						*gameMode = 2; // Режим на время
-						running = 0;
-					}
-					else if (currentSelection == 2)
-					{
-						*gameMode = 0; // Назад в меню
-						running = 0;
-					}
-					break;
-				}
-			}
-			else if (event.type == SDL_MOUSEMOTION)
-			{
-				int mouseX = event.motion.x;
-				int mouseY = event.motion.y;
-				int y = startY;
-				for (int i = 0; i < menuItemCount; i++)
-				{
-					int width, height;
-					TTF_SizeText(font, menuItems[i], &width, &height);
-					if (mouseX >= startX && mouseX <= startX + width && mouseY >= y && mouseY <= y + height)
-					{
-						currentSelection = i;
-					}
-					y += height + 10;
-				}
-			}
-			else if (event.type == SDL_MOUSEBUTTONDOWN)
-			{
-				if (event.button.button == SDL_BUTTON_LEFT)
-				{
-					if (currentSelection == 0)
-					{
-						*gameMode = 1; // Классический режим
-						running = 0;
-					}
-					else if (currentSelection == 1)
-					{
-						*gameMode = 2; // Режим на время
-						running = 0;
-					}
-					else if (currentSelection == 2)
-					{
-						*gameMode = 0; // Назад в меню
-						running = 0;
-					}
-				}
-			}
-		}
-
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		SDL_RenderClear(renderer);
-
-		RenderBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-		// Отрисовка Game Mode
-		int titleWidth, titleHeight;
-		TTF_SizeText(titleFont, "Game Mode", &titleWidth, &titleHeight);
-		int titleX = (SCREEN_WIDTH - titleWidth) / 2;
-		int titleY = 110;
-		RenderText("Game Mode", titleX, titleY, titleFont, purple);
-
-		// Отображение текущего режима
-		const char* currentModeText = (*gameMode == 1) ? "Current Mode: Classic" : "Current Mode: Timed";
-		int modeWidth, modeHeight;
-		TTF_SizeText(modeFont, currentModeText, &modeWidth, &modeHeight);
-		int modeX = (SCREEN_WIDTH - modeWidth) / 2;
-		int modeY = titleY + titleHeight;
-		RenderText(currentModeText, modeX, modeY, modeFont, blue);
-
-		int y = startY;
-		for (int i = 0; i < menuItemCount; i++)
-		{
-			int width, height;
-			TTF_SizeText(font, menuItems[i], &width, &height);
-			RenderText(menuItems[i], startX, y, font, (i == currentSelection) ? blue : white);
-			y += height + 10;
-		}
-		RenderButtonFrame(startX - 20, startY - 10, maxWidth + 40, totalHeight + 20, purple);
-
-		RenderWindowFrame(purple, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-		SDL_RenderPresent(renderer);
-	}
-
-	TTF_CloseFont(font);
-	TTF_CloseFont(titleFont);
-	TTF_CloseFont(modeFont);
-	
-	return *gameMode;
-}
+#include "settings.h"
 
 // Функция для показа правил игры
 int ShowGameRulesMenu()
@@ -310,8 +142,15 @@ int ShowMainMenu(int* inGame, int *gameMode)
 	};
 	int menuItemCount = sizeof(menuItems) / sizeof(menuItems[0]);
 
+	// Обновление текста в зависимости от состояния звука
+	if (!globalSettings.soundEnabled) 
+	{
+		menuItems[4] = "Sound: OFF";
+	}
+
 	while (running)
 	{
+
 		// Получаем размеры окна
 		int windowWidth, windowHeight;
 		SDL_GetRendererOutputSize(renderer, &windowWidth, &windowHeight);
@@ -331,7 +170,7 @@ int ShowMainMenu(int* inGame, int *gameMode)
 				maxWidth = width;
 			}
 		}
-		totalHeight -= 10; // Убираем последний отступ
+		totalHeight -= 10; // Последний отступ
 
 		// Координаты для центрирования
 		int startX = (windowWidth - maxWidth) / 2;
@@ -360,27 +199,39 @@ int ShowMainMenu(int* inGame, int *gameMode)
 					currentSelection = (currentSelection + 1) % menuItemCount;
 					break;
 				case SDLK_RETURN:
-					if (currentSelection == 0)
+					switch (currentSelection) 
 					{
+					// Начать игру
+					case 0: 
 						*inGame = 1;
 						running = 0;
-					}
-					else if (currentSelection == 1)
-					{
-						*gameMode = ShowGameModeMenu(gameMode);
-					}
-					else if (currentSelection == 2)
-					{
+						break;
+					// Правила игры
+					case 1:
 						ShowGameRulesMenu();
-					}
-					else if (currentSelection == 4)
-					{
-						// Переключение звука
-						menuItems[4] = (menuItems[4] == "Sound: ON") ? "Sound: OFF" : "Sound: ON";
-					}
-					else if (currentSelection == 5)
-					{
+						break;
+					// Рекорды
+					case 2:
+
+						break;
+					// Музыка
+					case 3:
+						globalSettings.soundEnabled = !globalSettings.soundEnabled;
+						SaveSettings(&globalSettings);
+						menuItems[3] = globalSettings.soundEnabled ? "Sound: ON" : "Sound: OFF";
+						if (globalSettings.soundEnabled) 
+						{
+							Mix_ResumeMusic();
+						}
+						else 
+						{
+							Mix_PauseMusic();
+						}
+						break;
+					// Выход
+					case 4:
 						running = 0;
+						break;
 					}
 					break;
 				}
@@ -412,11 +263,7 @@ int ShowMainMenu(int* inGame, int *gameMode)
 					}
 					else if (currentSelection == 1)
 					{
-						*gameMode = ShowGameModeMenu(gameMode);
-						if (*gameMode == -1)
-						{
-							running = 0;
-						}
+
 					}
 					else if (currentSelection == 2)
 					{
@@ -425,7 +272,16 @@ int ShowMainMenu(int* inGame, int *gameMode)
 					else if (currentSelection == 4)
 					{
 						// Переключение звука
-						menuItems[4] = (menuItems[4] == "Sound: ON") ? "Sound: OFF" : "Sound: ON";
+						if (Mix_PlayingMusic() == 1) 
+						{
+							Mix_HaltMusic();
+							menuItems[4] = "Sound: OFF";
+						}
+						else 
+						{
+							Mix_ResumeMusic();
+							menuItems[4] = "Sound: ON";
+						}
 					}
 					else if (currentSelection == 5)
 					{

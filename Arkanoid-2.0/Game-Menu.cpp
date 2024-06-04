@@ -180,11 +180,9 @@ int ShowPauseMenu(Game* game)
     SDL_Color purple = { 252, 86, 254, 255 };
     SDL_Color yellow = { 255, 255, 0, 255 };
 
-    const char* menuItems[] = { "Continue", "Sound", "Restart", "End Game" };
-    const int menuItemCount = 4;
+    const char* menuItems[] = { "Continue", "Restart", "End Game" };
+    const int menuItemCount = 3;
     int currentSelection = 0;
-
-    const char* soundStateText[] = { "Sound Off", "Sound On" };
 
     char scoreText[50];
     sprintf_s(scoreText, "SCORE: %d", game->score);
@@ -220,30 +218,12 @@ int ShowPauseMenu(Game* game)
                     }
                     else if (currentSelection == 1)
                     {
-                        game->musicOn = !game->musicOn;
-                        if (game->musicOn)
-                        {
-                            Mix_ResumeMusic();
-                        }
-                        else
-                        {
-                            Mix_PauseMusic();
-                        }
-                        menuItems[1] = soundStateText[game->musicOn ? 1 : 0];
+                        result = 1;
+                        running = 0;
                     }
                     else if (currentSelection == 2)
                     {
                         result = 2;
-                        running = 0;
-                    }
-                    else if (currentSelection == 3)
-                    {
-                        result = 3;
-                        running = 0;
-                    }
-                    else if (currentSelection == 4)
-                    {
-                        result = -1;
                         running = 0;
                     }
                     break;
@@ -256,14 +236,15 @@ int ShowPauseMenu(Game* game)
 
         RenderBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        RenderCenteredText("PAUSE MENU", largeFont, purple, SCREEN_HEIGHT / 4);
-        RenderCenteredText(scoreText, font, yellow, SCREEN_HEIGHT / 2 - 50);
+        RenderCenteredText("PAUSE MENU", largeFont, purple, SCREEN_HEIGHT / 6);
+        RenderCenteredText(scoreText, font, yellow, SCREEN_HEIGHT / 3);
 
         for (int i = 0; i < menuItemCount; i++)
         {
             RenderCenteredText(menuItems[i], font,
-                (i == currentSelection) ? blue : white, SCREEN_HEIGHT / 2 + i * 50);
+                (i == currentSelection) ? blue : white, SCREEN_HEIGHT / 3 + 50 + i * 40);
         }
+
 
         SDL_RenderPresent(renderer);
     }

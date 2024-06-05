@@ -15,4 +15,7 @@ void SaveSettings(const Settings* settings);
 int getCurrentSoundSetting();
 void ToggleSound();
 
+void SaveHighScores(int scores[], int size);
+void LoadHighScores(int scores[], int size);
+
 #endif // SETTINGS_H

@@ -23,7 +23,7 @@ void MainLoop()
     {
         if (!inGame)
         {
-            running = ShowMainMenu(&inGame, &gameMode);
+            running = ShowMainMenu(&inGame, &gameMode, &game);
         }
         else
         {

@@ -8,7 +8,7 @@
 #include "Shapes.h"
 #include "Game.h"
 
-int ShowMainMenu(int* inGame, int* gameMode);
+int ShowMainMenu(int* inGame, int* gameMode, Game* game);
 int ShowGameRulesMenu();
 
 #endif

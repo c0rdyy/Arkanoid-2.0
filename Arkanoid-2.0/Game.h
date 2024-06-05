@@ -60,6 +60,8 @@ struct Game
     int paddleWidthTimer;
     int paddleSpeedTimer;
     int ballSpeed;
+    int scores[5];
+    bool scoreRecorded;
 };
 
 void InitGame(Game* game);
@@ -82,5 +84,6 @@ void AddPowerUp(Game* game, int x, int y, int type);
 bool AllBricksDestroyed(Game* game);
 void ResetBallAndPaddle(Game* game);
 int CountRemainingBricks(Game* game);
+void UpdateHighScores(Game* game);
 
 #endif // !GAME_H

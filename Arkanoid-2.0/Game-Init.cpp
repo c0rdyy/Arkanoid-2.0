@@ -209,6 +209,7 @@ void InitGame(Game* game)
     game->gameOver = false;
     game->victory = false;
     game->musicOn = true;
+    game->scoreRecorded = false;;
     game->score = 0;
     game->highScore = 0;
     game->lives = 3;
@@ -216,6 +217,8 @@ void InitGame(Game* game)
     game->powerUpCount = 0;
     game->ballSpeed = 6;
     game->currentLevel = 1;
+
+    LoadHighScores(game->scores, 5);
 
     // Очистка кирпичей
     for (int i = 0; i < MAX_BRICKS; i++)

@@ -113,8 +113,53 @@ int ShowGameRulesMenu()
 	return 0;
 }
 
+// Функция для показа рекордов
+int ShowHighScores(Game* game) 
+{
+	SDL_Event event;
+	int running = 1;
+
+	TTF_Font* font = TTF_OpenFont("fonts/videotype.otf", 24);
+	TTF_Font* fontLarge = TTF_OpenFont("fonts/videotype.otf", 74);
+
+	SDL_Color yellow = { 255, 255, 0, 255 };
+	SDL_Color white = { 255, 255, 255, 255 };
+	SDL_Color blue = { 82, 255, 255, 255 };
+	SDL_Color purple = { 252, 86, 254, 255 };
+
+	while (running) 
+	{
+		while (SDL_PollEvent(&event)) 
+		{
+			if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) 
+			{
+				running = 0;
+			}
+		}
+
+		RenderBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+		RenderCenteredText("High Scores", fontLarge, purple, SCREEN_HEIGHT / 4 - 50);
+
+		for (int i = 0; i < 5; i++) 
+		{
+			char scoreText[50];
+			sprintf_s(scoreText, "%d. %d", i + 1, game->scores[i]);
+			RenderCenteredText(scoreText, font, white, SCREEN_HEIGHT / 2 - 90 + i * 30);
+		}
+		RenderCenteredText("Press ESC to exit", font, yellow, SCREEN_HEIGHT / 2 + 90);
+
+		SDL_RenderPresent(renderer);
+	}
+
+	TTF_CloseFont(font);
+	TTF_CloseFont(fontLarge);
+
+	return 0;
+}
+
 // Функция для главного меню
-int ShowMainMenu(int* inGame, int *gameMode)
+int ShowMainMenu(int* inGame, int *gameMode, Game *game)
 {
 	SDL_Event event;
 	int running = 1;
@@ -134,7 +179,6 @@ int ShowMainMenu(int* inGame, int *gameMode)
 	const char* menuItems[] = 
 	{
 		"Start Game",
-		"Game Mode",
 		"Game Rules",
 		"High Scores",
 		"Sound: ON",
@@ -145,7 +189,7 @@ int ShowMainMenu(int* inGame, int *gameMode)
 	// Обновление текста в зависимости от состояния звука
 	if (!globalSettings.soundEnabled) 
 	{
-		menuItems[4] = "Sound: OFF";
+		menuItems[3] = "Sound: OFF";
 	}
 
 	while (running)
@@ -212,7 +256,7 @@ int ShowMainMenu(int* inGame, int *gameMode)
 						break;
 					// Рекорды
 					case 2:
-
+						ShowHighScores(game);
 						break;
 					// Музыка
 					case 3:
@@ -256,37 +300,41 @@ int ShowMainMenu(int* inGame, int *gameMode)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
-					if (currentSelection == 0)
+					switch (currentSelection)
 					{
+						// Начать игру
+					case 0:
 						*inGame = 1;
 						running = 0;
-					}
-					else if (currentSelection == 1)
-					{
-
-					}
-					else if (currentSelection == 2)
-					{
+						break;
+						// Правила игры
+					case 1:
 						ShowGameRulesMenu();
-					}
-					else if (currentSelection == 4)
-					{
-						// Переключение звука
-						if (Mix_PlayingMusic() == 1) 
-						{
-							Mix_HaltMusic();
-							menuItems[4] = "Sound: OFF";
-						}
-						else 
+						break;
+						// Рекорды
+					case 2:
+						ShowHighScores(game);
+						break;
+						// Музыка
+					case 3:
+						globalSettings.soundEnabled = !globalSettings.soundEnabled;
+						SaveSettings(&globalSettings);
+						menuItems[3] = globalSettings.soundEnabled ? "Sound: ON" : "Sound: OFF";
+						if (globalSettings.soundEnabled)
 						{
 							Mix_ResumeMusic();
-							menuItems[4] = "Sound: ON";
 						}
-					}
-					else if (currentSelection == 5)
-					{
+						else
+						{
+							Mix_PauseMusic();
+						}
+						break;
+						// Выход
+					case 4:
 						running = 0;
+						break;
 					}
+					break;
 				}
 			}
 			else if (event.type == SDL_WINDOWEVENT)

@@ -1,5 +1,24 @@
 #include "Game.h"
 
+// Функция для обновления рекордов
+void UpdateHighScores(Game* game) 
+{
+    int score = game->score;
+    for (int i = 0; i < 5; i++) 
+    {
+        if (score > game->scores[i]) 
+        {
+            for (int j = 4; j > i; j--) 
+            {
+                game->scores[j] = game->scores[j - 1];
+            }
+            game->scores[i] = score;
+            break;
+        }
+    }
+    SaveHighScores(game->scores, 5);
+}
+
 // Функция
 bool AllBricksDestroyed(Game* game) 
 {
@@ -449,6 +468,7 @@ int GameLoop(Game* game)
         }
         else if (game->gameOver)
         {
+            UpdateHighScores(game);
             int result = ShowEndGameMenu(game);
             if (result == 1) 
             {
@@ -467,6 +487,7 @@ int GameLoop(Game* game)
         }
         else if (game->victory)
         {
+            UpdateHighScores(game);
             int result = ShowVictoryMenu(game);
             if (result == 1)
             {
